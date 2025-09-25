@@ -8,6 +8,9 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files (HTML, CSS, JS)
+app.use(express.static('.'));
+
 let textParts = [];
 let families = {}; // New structure: { familyName: { members: [], chapterDistribution: {}, completedParts: {}, adminPassword: '' } }
 
@@ -467,6 +470,11 @@ app.post('/:familyName/completeall', (req, res) => {
 	saveFamilies();
 
 	res.json({ message: 'All Parts marked as completed:' + family.chapterDistribution[name] });
+});
+
+// Serve index.html for family URLs (e.g., /gueta/, /cohen/)
+app.get('/:familyName/', (req, res) => {
+	res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // Schedule automatic reset at 22:00 (10 PM) every day for all families
