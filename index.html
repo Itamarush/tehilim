@@ -337,6 +337,7 @@
 		let currentUser = null;
 		let familyMembers = [];
 		let userParts = [];
+		let completedParts = [];
 		let currentChapter = null;
 		const API_BASE = window.location.origin;
 
@@ -415,6 +416,7 @@
 
 				if (response.ok) {
 					userParts = data.userParts;
+					completedParts = data.completed;
 					displayUserChapters(data.userParts, data.completed);
 					updatePersonalProgress(data.completed.length, data.userParts.length);
 					
@@ -457,9 +459,8 @@
 			document.getElementById('chapter-title').textContent = `פרק ${chapter.id}`;
 			document.getElementById('chapter-content').textContent = chapter.text;
 			
-			// Update the complete button based on completion status
-			const isCompleted = userParts.find(p => p.id === chapter.id) && 
-								userParts.some(p => p.id === chapter.id && document.querySelector(`[onclick*="${chapter.id}"]`).classList.contains('completed'));
+			// Check if this chapter is completed using the completedParts array
+			const isCompleted = completedParts.includes(chapter.id);
 			
 			const completeBtn = document.getElementById('mark-complete-btn');
 			if (isCompleted) {
@@ -485,17 +486,24 @@
 		// Mark current chapter as complete
 		async function markCurrentChapterComplete() {
 			if (!currentChapter) return;
-			await toggleCompletion(currentChapter.id);
 			
-			// Update the button appearance
-			const completeBtn = document.getElementById('mark-complete-btn');
-			completeBtn.textContent = 'הושלם ✓';
-			completeBtn.style.background = '#28a745';
+			const success = await toggleCompletion(currentChapter.id);
+			if (success) {
+				// Update the local completedParts array
+				if (!completedParts.includes(currentChapter.id)) {
+					completedParts.push(currentChapter.id);
+				}
+				
+				// Update the button appearance
+				const completeBtn = document.getElementById('mark-complete-btn');
+				completeBtn.textContent = 'הושלם ✓';
+				completeBtn.style.background = '#28a745';
+			}
 		}
 
 		// Toggle chapter completion
 		async function toggleCompletion(partId) {
-			if (!currentUser || !currentFamily) return;
+			if (!currentUser || !currentFamily) return false;
 
 			try {
 				const response = await fetch(`${API_BASE}/${currentFamily}/complete`, {
@@ -506,14 +514,19 @@
 
 				const data = await response.json();
 				if (response.ok) {
-					// Refresh user data
-					selectUser(currentUser);
+					// Refresh user data only if we're on the chapter list view
+					if (document.getElementById('user-chapters').classList.contains('hidden') === false) {
+						selectUser(currentUser);
+					}
 					showMessage('הפרק סומן כהושלם!');
+					return true;
 				} else {
 					showMessage(data.error || 'שגיאה בעדכון', 'error');
+					return false;
 				}
 			} catch (error) {
 				showMessage('שגיאה בתקשורת', 'error');
+				return false;
 			}
 		}
 
