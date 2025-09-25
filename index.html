@@ -191,6 +191,30 @@
 			border: 2px solid #ffeaa7;
 		}
 
+		/* Chapter text display */
+		#chapter-text {
+			background: #f8f9fa;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			text-align: right;
+			line-height: 1.8;
+			font-size: 18px;
+			border: 2px solid #e2e8f0;
+		}
+
+		.chapter-title {
+			font-weight: bold;
+			color: #1976d2;
+			font-size: 22px;
+			margin-bottom: 15px;
+			text-align: center;
+		}
+
+		.chapter-content {
+			color: #333;
+		}
+
 		/* Hidden by default */
 		.hidden {
 			display: none;
@@ -279,6 +303,16 @@
 				</div>
 			</div>
 
+			<!-- Chapter Text Display -->
+			<div id="chapter-text" class="hidden">
+				<div class="chapter-title" id="chapter-title"></div>
+				<div class="chapter-content" id="chapter-content"></div>
+				<div style="text-align: center; margin-top: 20px;">
+					<button class="admin-btn" id="mark-complete-btn" onclick="markCurrentChapterComplete()">סמן כהושלם</button>
+					<button class="back-btn" onclick="hideChapterText()">חזרה לרשימת פרקים</button>
+				</div>
+			</div>
+
 			<div style="margin-top: 30px;">
 				<button class="back-btn" onclick="backToMemberSelection()">חזרה לבחירת חבר</button>
 				<button class="admin-btn" onclick="showAdminPanel()">ניהול משפחה</button>
@@ -303,6 +337,7 @@
 		let currentUser = null;
 		let familyMembers = [];
 		let userParts = [];
+		let currentChapter = null;
 		const API_BASE = window.location.origin;
 
 		// Get family name from URL path
@@ -405,7 +440,7 @@
 				const button = document.createElement('button');
 				button.className = 'chapter-btn';
 				button.textContent = `פרק ${part.id}`;
-				button.onclick = () => toggleCompletion(part.id);
+				button.onclick = () => showChapterText(part);
 				
 				if (completed.includes(part.id)) {
 					button.classList.add('completed');
@@ -413,6 +448,49 @@
 				
 				container.appendChild(button);
 			});
+		}
+
+		// Show chapter text content
+		function showChapterText(chapter) {
+			currentChapter = chapter;
+			
+			document.getElementById('chapter-title').textContent = `פרק ${chapter.id}`;
+			document.getElementById('chapter-content').textContent = chapter.text;
+			
+			// Update the complete button based on completion status
+			const isCompleted = userParts.find(p => p.id === chapter.id) && 
+								userParts.some(p => p.id === chapter.id && document.querySelector(`[onclick*="${chapter.id}"]`).classList.contains('completed'));
+			
+			const completeBtn = document.getElementById('mark-complete-btn');
+			if (isCompleted) {
+				completeBtn.textContent = 'הושלם ✓';
+				completeBtn.style.background = '#28a745';
+			} else {
+				completeBtn.textContent = 'סמן כהושלם';
+				completeBtn.style.background = '';
+			}
+			
+			// Hide chapter list, show chapter text
+			document.getElementById('user-chapters').classList.add('hidden');
+			document.getElementById('chapter-text').classList.remove('hidden');
+		}
+
+		// Hide chapter text and show chapter list
+		function hideChapterText() {
+			document.getElementById('chapter-text').classList.add('hidden');
+			document.getElementById('user-chapters').classList.remove('hidden');
+			currentChapter = null;
+		}
+
+		// Mark current chapter as complete
+		async function markCurrentChapterComplete() {
+			if (!currentChapter) return;
+			await toggleCompletion(currentChapter.id);
+			
+			// Update the button appearance
+			const completeBtn = document.getElementById('mark-complete-btn');
+			completeBtn.textContent = 'הושלם ✓';
+			completeBtn.style.background = '#28a745';
 		}
 
 		// Toggle chapter completion
@@ -451,7 +529,10 @@
 			document.getElementById('member-selection').classList.remove('hidden');
 			document.getElementById('user-dashboard').classList.add('hidden');
 			document.getElementById('family-status-section').classList.add('hidden');
+			document.getElementById('chapter-text').classList.add('hidden');
+			document.getElementById('user-chapters').classList.remove('hidden');
 			currentUser = null;
+			currentChapter = null;
 		}
 
 		// Load and display family status
@@ -509,3 +590,4 @@
 	</script>
 </body>
 </html>
+git config user.email "itamarush@example.com"
