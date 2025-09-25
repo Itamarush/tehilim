@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול משפחות - תהילים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1, h2 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+        
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .members-list {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+        }
+        
+        .message {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .success {
+            background: #f0fff4;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #feb2b2;
+        }
+        
+        .families-list {
+            margin-top: 30px;
+        }
+        
+        .family-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .family-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+        
+        .family-info {
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .login-section {
+            margin-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ניהול משפחות תהילים</h1>
+        
+        <div class="form-section">
+            <h2>רישום משפחה חדשה</h2>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="familyName">שם המשפחה:</label>
+                    <input type="text" id="familyName" name="familyName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="adminPassword">סיסמת מנהל:</label>
+                    <input type="password" id="adminPassword" name="adminPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="members">רשימת חברים (שם אחד בכל שורה):</label>
+                    <textarea id="members" name="members" class="members-list" placeholder="הכניסו שם אחד בכל שורה" required></textarea>
+                </div>
+                
+                <button type="submit">רישום משפחה</button>
+            </form>
+        </div>
+        
+        <div class="form-section">
+            <h2>כניסה לניהול משפחה</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginFamily">שם המשפחה:</label>
+                    <input type="text" id="loginFamily" name="loginFamily" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">סיסמת מנהל:</label>
+                    <input type="password" id="loginPassword" name="loginPassword" required>
+                </div>
+                
+                <button type="submit" class="btn-secondary">כניסה לניהול</button>
+            </form>
+            
+            <div class="login-section" id="managementSection" style="display: none;">
+                <h3>ניהול משפחה</h3>
+                <div class="form-group">
+                    <label for="newMember">הוספת חבר חדש:</label>
+                    <input type="text" id="newMember" placeholder="שם החבר החדש">
+                    <button type="button" onclick="addMember()" class="btn-secondary">הוסף חבר</button>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" onclick="resetFamily()" style="background: #e53e3e;">איפוס כל ההשלמות</button>
+                    <button type="button" onclick="viewFamily()" class="btn-secondary">צפייה במשפחה</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="families-list">
+            <h2>משפחות קיימות</h2>
+            <button type="button" onclick="loadFamilies()" class="btn-secondary">טען רשימת משפחות</button>
+            <div id="familiesList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentFamily = null;
+        
+        // Show message to user
+        function showMessage(text, type = 'success') {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            messageEl.style.display = 'block';
+            setTimeout(() => {
+                messageEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Register new family
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const familyName = document.getElementById('familyName').value;
+            const adminPassword = document.getElementById('adminPassword').value;
+            const membersText = document.getElementById('members').value;
+            const members = membersText.split('\n').map(name => name.trim()).filter(name => name);
+            
+            if (members.length === 0) {
+                showMessage('יש להוסיף לפחות חבר אחד', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/families/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ familyName, members, adminPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`משפחת ${familyName} נרשמה בהצלחה!`);
+                    document.getElementById('registerForm').reset();
+                    loadFamilies();
+                } else {
+                    showMessage(data.error || 'שגיאה ברישום המשפחה', 'error');
+                }
+            } catch (error) {
+                showMessage('שגיאה בתקשורת עם השרת', 'error');
+            }
+        });
+        
+        // Login to manage family
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const familyName = document.getElementById('loginFamily').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/families/${familyName}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentFamily = { name: familyName, password: password, data: data.family };
+                    showMessage(`ברוכים הבאים למשפחת ${familyName}`);
+                    document.getElementById('managementSection').style.display = 'block';
+                } else {
+                    showMessage(data.error || 'שגיאה בכניסה', 'error');
+                }
+            } catch (error) {
+                showMessage('שגיאה בתקשורת עם השרת', 'error');
+            }
+        });
+        
+        // Add member to family
+        async function addMember() {
+            if (!currentFamily) {
+                showMessage('יש להתחבר תחילה', 'error');
+                return;
+            }
+            
+            const memberName = document.getElementById('newMember').value.trim();
+            if (!memberName) {
+                showMessage('יש להזין שם חבר', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/families/${currentFamily.name}/members`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberName, adminPassword: currentFamily.password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`החבר ${memberName} נוסף בהצלחה`);
+                    document.getElementById('newMember').value = '';
+                } else {
+                    showMessage(data.error || 'שגיאה בהוספת החבר', 'error');
+                }
+            } catch (error) {
+                showMessage('שגיאה בתקשורת עם השרת', 'error');
+            }
+        }
+        
+        // Reset family completions
+        async function resetFamily() {
+            if (!currentFamily) {
+                showMessage('יש להתחבר תחילה', 'error');
+                return;
+            }
+            
+            if (!confirm('האם אתם בטוחים שברצונכם לאפס את כל ההשלמות?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/${currentFamily.name}/resetcompleted`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('כל ההשלמות אופסו בהצלחה');
+                } else {
+                    showMessage(data.error || 'שגיאה באיפוס ההשלמות', 'error');
+                }
+            } catch (error) {
+                showMessage('שגיאה בתקשורת עם השרת', 'error');
+            }
+        }
+        
+        // View family
+        function viewFamily() {
+            if (!currentFamily) {
+                showMessage('יש להתחבר תחילה', 'error');
+                return;
+            }
+            
+            window.open(`${API_BASE}/${currentFamily.name}/`, '_blank');
+        }
+        
+        // Load families list
+        async function loadFamilies() {
+            try {
+                const response = await fetch(`${API_BASE}/api/families`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const familiesListEl = document.getElementById('familiesList');
+                    familiesListEl.innerHTML = '';
+                    
+                    data.families.forEach(family => {
+                        const familyEl = document.createElement('div');
+                        familyEl.className = 'family-item';
+                        familyEl.innerHTML = `
+                            <div class="family-name">${family.name}</div>
+                            <div class="family-info">
+                                חברים: ${family.memberCount} | 
+                                נוצרה: ${new Date(family.createdAt).toLocaleDateString('he-IL')}
+                                <br>
+                                <a href="${API_BASE}/${family.name}/" target="_blank" style="color: #667eea;">צפייה במשפחה</a>
+                            </div>
+                        `;
+                        familiesListEl.appendChild(familyEl);
+                    });
+                } else {
+                    showMessage('שגיאה בטעינת רשימת המשפחות', 'error');
+                }
+            } catch (error) {
+                showMessage('שגיאה בתקשורת עם השרת', 'error');
+            }
+        }
+        
+        // Load families on page load
+        window.addEventListener('load', loadFamilies);
+    </script>
+</body>
+</html>
