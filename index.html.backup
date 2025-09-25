@@ -115,30 +115,6 @@
 			content: ' ✓';
 		}
 
-		/* Chapter text display */
-		#chapter-text {
-			background: #f8f9fa;
-			border-radius: 10px;
-			padding: 20px;
-			margin: 20px 0;
-			text-align: right;
-			line-height: 1.8;
-			font-size: 18px;
-			border: 2px solid #e2e8f0;
-		}
-
-		.chapter-title {
-			font-weight: bold;
-			color: #1976d2;
-			font-size: 22px;
-			margin-bottom: 15px;
-			text-align: center;
-		}
-
-		.chapter-content {
-			color: #333;
-		}
-
 		/* Admin and utility buttons */
 		.admin-btn {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -213,6 +189,30 @@
 			background: #fff3cd;
 			color: #856404;
 			border: 2px solid #ffeaa7;
+		}
+
+		/* Chapter text display */
+		#chapter-text {
+			background: #f8f9fa;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			text-align: right;
+			line-height: 1.8;
+			font-size: 18px;
+			border: 2px solid #e2e8f0;
+		}
+
+		.chapter-title {
+			font-weight: bold;
+			color: #1976d2;
+			font-size: 22px;
+			margin-bottom: 15px;
+			text-align: center;
+		}
+
+		.chapter-content {
+			color: #333;
 		}
 
 		/* Hidden by default */
@@ -459,7 +459,7 @@
 			document.getElementById('chapter-title').textContent = `פרק ${chapter.id}`;
 			document.getElementById('chapter-content').textContent = chapter.text;
 			
-			// Check if this chapter is completed
+			// Check if this chapter is completed using the completedParts array
 			const isCompleted = completedParts.includes(chapter.id);
 			
 			const completeBtn = document.getElementById('mark-complete-btn');
@@ -514,6 +514,10 @@
 
 				const data = await response.json();
 				if (response.ok) {
+					// Refresh user data only if we're on the chapter list view
+					if (document.getElementById('user-chapters').classList.contains('hidden') === false) {
+						selectUser(currentUser);
+					}
 					showMessage('הפרק סומן כהושלם!');
 					return true;
 				} else {
@@ -599,3 +603,4 @@
 	</script>
 </body>
 </html>
+git config user.email "itamarush@example.com"
