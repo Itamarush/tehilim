@@ -115,6 +115,66 @@
 			content: ' ✓';
 		}
 
+		/* Chapter display with content */
+		.chapter-item {
+			background: #f8f9fa;
+			border: 2px solid #e2e8f0;
+			border-radius: 10px;
+			margin: 20px 0;
+			padding: 20px;
+			text-align: right;
+		}
+
+		.chapter-item.completed {
+			border-color: #28a745;
+			background: #f8fff8;
+		}
+
+		.chapter-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+		}
+
+		.chapter-number {
+			font-size: 24px;
+			font-weight: bold;
+			color: #1976d2;
+		}
+
+		.chapter-complete-btn {
+			background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+			color: white;
+			border: none;
+			border-radius: 8px;
+			padding: 10px 20px;
+			font-size: 16px;
+			font-weight: bold;
+			cursor: pointer;
+			transition: all 0.3s ease;
+		}
+
+		.chapter-complete-btn:hover {
+			transform: translateY(-2px);
+		}
+
+		.chapter-complete-btn.completed {
+			background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+		}
+
+		.chapter-complete-btn.completed::after {
+			content: ' ✓';
+		}
+
+		.chapter-text-content {
+			line-height: 1.8;
+			font-size: 18px;
+			color: #333;
+			margin-top: 15px;
+		}
+
 		/* Admin and utility buttons */
 		.admin-btn {
 			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -189,30 +249,6 @@
 			background: #fff3cd;
 			color: #856404;
 			border: 2px solid #ffeaa7;
-		}
-
-		/* Chapter text display */
-		#chapter-text {
-			background: #f8f9fa;
-			border-radius: 10px;
-			padding: 20px;
-			margin: 20px 0;
-			text-align: right;
-			line-height: 1.8;
-			font-size: 18px;
-			border: 2px solid #e2e8f0;
-		}
-
-		.chapter-title {
-			font-weight: bold;
-			color: #1976d2;
-			font-size: 22px;
-			margin-bottom: 15px;
-			text-align: center;
-		}
-
-		.chapter-content {
-			color: #333;
 		}
 
 		/* Hidden by default */
@@ -298,18 +334,8 @@
 
 			<div id="user-chapters">
 				<h3>הפרקים שלי</h3>
-				<div id="chapter-buttons">
+				<div id="chapters-content">
 					<div class="loading">טוען פרקים...</div>
-				</div>
-			</div>
-
-			<!-- Chapter Text Display -->
-			<div id="chapter-text" class="hidden">
-				<div class="chapter-title" id="chapter-title"></div>
-				<div class="chapter-content" id="chapter-content"></div>
-				<div style="text-align: center; margin-top: 20px;">
-					<button class="admin-btn" id="mark-complete-btn" onclick="markCurrentChapterComplete()">סמן כהושלם</button>
-					<button class="back-btn" onclick="hideChapterText()">חזרה לרשימת פרקים</button>
 				</div>
 			</div>
 
@@ -433,77 +459,38 @@
 			}
 		}
 
-		// Display user chapters as clickable buttons
+		// Display user chapters with full content
 		function displayUserChapters(parts, completed) {
-			const container = document.getElementById('chapter-buttons');
+			const container = document.getElementById('chapters-content');
 			container.innerHTML = '';
 
 			parts.forEach(part => {
-				const button = document.createElement('button');
-				button.className = 'chapter-btn';
-				button.textContent = `פרק ${part.id}`;
-				button.onclick = () => showChapterText(part);
+				const chapterDiv = document.createElement('div');
+				chapterDiv.className = 'chapter-item';
 				
-				if (completed.includes(part.id)) {
-					button.classList.add('completed');
+				const isCompleted = completed.includes(part.id);
+				if (isCompleted) {
+					chapterDiv.classList.add('completed');
 				}
 				
-				container.appendChild(button);
+				chapterDiv.innerHTML = `
+					<div class="chapter-header">
+						<div class="chapter-number">פרק ${part.id}</div>
+						<button class="chapter-complete-btn ${isCompleted ? 'completed' : ''}" 
+								onclick="toggleChapterCompletion(${part.id})">
+							${isCompleted ? 'הושלם' : 'סמן כהושלם'}
+						</button>
+					</div>
+					<div class="chapter-text-content">${part.text}</div>
+				`;
+				
+				container.appendChild(chapterDiv);
 			});
 		}
 
-		// Show chapter text content
-		function showChapterText(chapter) {
-			currentChapter = chapter;
-			
-			document.getElementById('chapter-title').textContent = `פרק ${chapter.id}`;
-			document.getElementById('chapter-content').textContent = chapter.text;
-			
-			// Check if this chapter is completed using the completedParts array
-			const isCompleted = completedParts.includes(chapter.id);
-			
-			const completeBtn = document.getElementById('mark-complete-btn');
-			if (isCompleted) {
-				completeBtn.textContent = 'הושלם ✓';
-				completeBtn.style.background = '#28a745';
-			} else {
-				completeBtn.textContent = 'סמן כהושלם';
-				completeBtn.style.background = '';
-			}
-			
-			// Hide chapter list, show chapter text
-			document.getElementById('user-chapters').classList.add('hidden');
-			document.getElementById('chapter-text').classList.remove('hidden');
-		}
-
-		// Hide chapter text and show chapter list
-		function hideChapterText() {
-			document.getElementById('chapter-text').classList.add('hidden');
-			document.getElementById('user-chapters').classList.remove('hidden');
-			currentChapter = null;
-		}
-
-		// Mark current chapter as complete
-		async function markCurrentChapterComplete() {
-			if (!currentChapter) return;
-			
-			const success = await toggleCompletion(currentChapter.id);
-			if (success) {
-				// Update the local completedParts array
-				if (!completedParts.includes(currentChapter.id)) {
-					completedParts.push(currentChapter.id);
-				}
-				
-				// Update the button appearance
-				const completeBtn = document.getElementById('mark-complete-btn');
-				completeBtn.textContent = 'הושלם ✓';
-				completeBtn.style.background = '#28a745';
-			}
-		}
-
 		// Toggle chapter completion
-		async function toggleCompletion(partId) {
-			if (!currentUser || !currentFamily) return false;
+		async function toggleChapterCompletion(partId) {
+			if (!currentUser || !currentFamily) return;
 
 			try {
 				const response = await fetch(`${API_BASE}/${currentFamily}/complete`, {
@@ -514,19 +501,29 @@
 
 				const data = await response.json();
 				if (response.ok) {
-					// Refresh user data only if we're on the chapter list view
-					if (document.getElementById('user-chapters').classList.contains('hidden') === false) {
-						selectUser(currentUser);
+					// Update the local completedParts array
+					if (!completedParts.includes(partId)) {
+						completedParts.push(partId);
 					}
+					
+					// Update the specific button and container
+					const chapterItem = document.querySelector(`.chapter-item:nth-child(${userParts.findIndex(p => p.id === partId) + 1})`);
+					if (chapterItem) {
+						chapterItem.classList.add('completed');
+						const button = chapterItem.querySelector('.chapter-complete-btn');
+						button.textContent = 'הושלם';
+						button.classList.add('completed');
+					}
+					
+					// Update progress
+					updatePersonalProgress(completedParts.length, userParts.length);
+					
 					showMessage('הפרק סומן כהושלם!');
-					return true;
 				} else {
 					showMessage(data.error || 'שגיאה בעדכון', 'error');
-					return false;
 				}
 			} catch (error) {
 				showMessage('שגיאה בתקשורת', 'error');
-				return false;
 			}
 		}
 
@@ -542,10 +539,7 @@
 			document.getElementById('member-selection').classList.remove('hidden');
 			document.getElementById('user-dashboard').classList.add('hidden');
 			document.getElementById('family-status-section').classList.add('hidden');
-			document.getElementById('chapter-text').classList.add('hidden');
-			document.getElementById('user-chapters').classList.remove('hidden');
 			currentUser = null;
-			currentChapter = null;
 		}
 
 		// Load and display family status
